@@ -1,0 +1,111 @@
+.gates {
+    width: 20%;
+    margin-right: 2%;
+    padding: 10px;
+    border: 2px solid #d1d5db; /* Gray border */
+    display: inline-block; /* Align with the circuit container */
+    vertical-align: top; /* Align the top of gates with the circuit */
+}
+
+.circuit {
+    width: 75%;
+    padding: 10px;
+    border: 2px solid #fbbf24; /* Yellow border */
+    display: inline-block; /* Align with the gates container */
+    vertical-align: top; /* Align the top of circuit with the gates */
+}
+
+.qubits {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Updated styles for .qubit-line */
+.qubit-line {
+    position: relative;
+    height: 40px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
+
+/* Class for the label of the qubit */
+.qubit-label {
+    margin-right: 10px;
+     /* Space between label and the wire */
+     width: 30px;
+}
+
+.qubit-wire {
+    flex-grow: 1; /* Take up remaining space */
+    height: 1px;
+    background-color: #d1d5db; /* Color for the wire */
+    position: relative;
+}
+
+/* Updated styles for .gate to be draggable and center-aligned */
+.gate {
+    margin: 0 5px;
+    height: 40px;
+    width: 40px;
+    padding: 5px 10px;
+    border: 1px solid #d1d5db;
+    background-color: #f3f4f6;
+    cursor: grab;
+    display: inline-flex; /* Use flex for centering text */
+    align-items: center; /* Center the text vertically */
+    justify-content: center;
+    margin-right: 5px; 
+}
+
+/* Add styles for .gate when it's being dragged */
+.gate.dragging {
+    opacity: 0.5;
+}
+
+
+.add-qubit {
+    padding: 5px 15px;
+    background-color: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.palette-gate {
+    margin-bottom: 5px; /* Space between draggable gates */
+}
+
+/* Additional styles for dragging */
+.dragging {
+    opacity: 0.5;
+}
+
+/* Button styles */
+.add-qubit {
+    padding: 5px 15px;
+    background-color: #2563eb;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px; /* Space from the last qubit line */
+}
+
+.remove-qubit {
+    margin-left: 10px; /* Push the button to the right */
+    padding: 2px 5px;
+    cursor: pointer;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .gates, .circuit {
+        width: 100%;
+        margin-right: 0;
+    }
+}
