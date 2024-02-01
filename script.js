@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropTarget = dropTarget.parentNode;
             }
             
-            // Get the bounding rectangle of the qubit line
+            // Get the bounding rectangle of the qubit linegit push -u origin master
             const qubitRect = dropTarget.getBoundingClientRect();
             // Calculate the horizontal position where the gate was dropped
             const dropPositionX = ev.clientX - qubitRect.left;
@@ -139,6 +139,52 @@ document.addEventListener('DOMContentLoaded', function() {
         gateElement.addEventListener('dragend', dragEnd);
         gatePalette.appendChild(gateElement);
     });
+
+    // ... your existing script.js code ...
+
+// Function to generate QUIC
+function generateQuic() {
+    const qubitLines = document.querySelectorAll('.qubit-line');
+    const depthGates = [];
+    let maxDepth = 0;
+
+    // Find the maximum depth
+    qubitLines.forEach(line => {
+        maxDepth = Math.max(maxDepth, line.children.length - 1); // -1 to exclude the qubit label
+    });
+
+    // Initialize depthGates with 'I'
+    for (let i = 0; i < maxDepth; i++) {
+        depthGates[i] = Array(qubitLines.length).fill('I');
+    }
+
+    // Populate depthGates with actual gates
+    qubitLines.forEach((line, qubitIndex) => {
+        line.querySelectorAll('.gate').forEach((gate, gateIndex) => {
+            depthGates[gateIndex][qubitIndex] = gate.textContent;
+        });
+    });
+
+    // Join the gates with commas and create the QUIC string
+    const quic = depthGates.map(depth => depth.join('')).join(',');
+    
+    // Output the QUIC (here we simply log it to the console, you can change this to display it on the page)
+    console.log(quic);
+
+    // Optionally, output to the page
+    const quicDisplay = document.getElementById('quicDisplay');
+    if (!quicDisplay) {
+        const display = document.createElement('div');
+        display.id = 'quicDisplay';
+        display.textContent = quic;
+        document.body.appendChild(display);
+    } else {
+        quicDisplay.textContent = quic;
+    }
+}
+
+document.getElementById('generateQuic').addEventListener('click', generateQuic);
+
 
     // Initialize with one qubit line
     addQubit();
