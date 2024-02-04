@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const gates = ['H', 'X', 'Y', 'Z', 'CN', 'T', 'I', 'm'];
+    const gates = ['H', 'X', 'Y', 'Z', 'C', 'P', 'T', 'I', 'm'];
     const gatePalette = document.getElementById('gatePalette');
     const circuit = document.getElementById('circuit');
     let qubitCount = 0;
@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         gatePalette.appendChild(gateElement);
     });
 
-    // ... your existing script.js code ...
 
 // Function to generate QUIC
 function generateQuic() {
