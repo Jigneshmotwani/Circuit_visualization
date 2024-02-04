@@ -4,7 +4,14 @@
     padding: 10px;
     border: 2px solid #d1d5db; /* Gray border */
     display: inline-block; /* Align with the circuit container */
-    vertical-align: top; /* Align the top of gates with the circuit */
+    vertical-align: top;
+    z-index: 1;
+
+     /* Align the top of gates with the circuit */
+}
+
+.control-line-over-gate {
+    opacity: 0.5;
 }
 
 .circuit {
@@ -58,6 +65,8 @@
     justify-content: center;
     margin-right: 5px; 
 }
+
+
 
 /* Add styles for .gate when it's being dragged */
 .gate.dragging {
@@ -113,6 +122,26 @@
     align-self: center;
     align-content: center;
 }
+
+.control-line {
+    position: absolute;
+    z-index: 0;
+    background-color: #d1d5db; /* Gray color */
+}
+/* Alternate styles for multiple connections */
+.control-line.multiple-1 {
+    background-color: #FF4136; 
+}
+
+.control-line.multiple-2 {
+    background-color: #0074D9; 
+}
+
+.control-line.multiple-3 {
+    background-color: #2ECC40;
+}
+
+
 
 
 /* Responsive styles */

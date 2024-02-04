@@ -70,6 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // This would be the case if no gates are present or it should be the first gate
                 dropTarget.insertBefore(gate, dropTarget.firstChild);
             }
+            drawControlLines();
+
         }
     
         // Remove the dragging class from the original element in the palette
@@ -118,6 +120,8 @@ document.addEventListener('DOMContentLoaded', function() {
         qubitCount--;
         // Update qubit labels
         updateQubitLabels();
+        drawControlLines();
+
     }
 
     function updateQubitLabels() {
@@ -181,13 +185,78 @@ function generateQuic() {
         quicDisplay.textContent = quic;
     }
 }
+function drawControlLines() {
+    // Clear any existing control lines
+    document.querySelectorAll('.control-line').forEach(line => line.remove());
+
+    // Iterate over each depth (column) to draw lines
+    const maxDepth = findMaxDepth();
+    for (let depth = 1; depth <= maxDepth; depth++) {
+        let controlGateElement = null;
+        const targetGatesElements = [];
+
+        // Find control gate 'C' and target gates 'X', 'Y', 'Z' at this depth
+        document.querySelectorAll(`.gate:nth-child(${depth + 1})`).forEach(gate => {
+            if (gate.textContent === 'C') {
+                controlGateElement = gate;
+            } else if (['X', 'Y', 'Z'].includes(gate.textContent)) {
+                targetGatesElements.push(gate);
+            }
+        });
+
+        // Draw lines between control gate 'C' and target gates 'X', 'Y', 'Z'
+        if (controlGateElement) {
+            targetGatesElements.forEach(targetGate => {
+                drawLine(controlGateElement, targetGate);
+            });
+        }
+    }
+}
+
+function findMaxDepth() {
+    return Array.from(document.querySelectorAll('.qubit-line'))
+        .reduce((max, line) => Math.max(max, line.querySelectorAll('.gate').length), 0);
+}
+
+function drawLine(fromElement, toElement) {
+    const fromRect = fromElement.getBoundingClientRect();
+    const toRect = toElement.getBoundingClientRect();
+    const line = document.createElement('div');
+    line.classList.add('control-line');
+    line.style.opacity = '1';
+
+    
+    
+    // Set the position of the line at the bottom of the 'C' gate
+    line.style.position = 'absolute';
+    line.style.left = `${fromRect.left + (fromRect.width / 2) - 1}px`; // -1 for the line width
+    line.style.top = `${fromRect.bottom}px`;
+    line.style.width = '2px'; // Line width
+    line.style.height = `${toRect.top - fromRect.bottom}px`; // Height from the bottom of 'C' to the top of 'X', 'Y', 'Z'
+    line.style.backgroundColor = 'grey';
+    
+    // Add the line to the body of the document
+    document.body.appendChild(line);
+    
+}
+
+    
+
+
+
+
 
 document.getElementById('generateQuic').addEventListener('click', generateQuic);
 
 
     // Initialize with one qubit line
     addQubit();
+    drawControlLines();
+
 
     // Add event listener for the 'Add Qubit' button
-    document.getElementById('addQubit').addEventListener('click', addQubit);
+    document.getElementById('addQubit').addEventListener('click', function () {
+        addQubit();
+        drawControlLines();
+    });
 });
