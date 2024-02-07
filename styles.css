@@ -141,6 +141,14 @@
     background-color: #2ECC40;
 }
 
+.separator {
+    width: 40px; /* Assuming this is the width of your gates */
+    height: 400px; /* Adjust the height if needed */
+    border: 1px solid #d1d5db; /* Consistent with gate styling */
+    background-color: #ffeb3b; /* Distinct color for visibility */
+    text-align: center;
+    line-height: 40px; /* Center the text vertically */
+}
 
 
 

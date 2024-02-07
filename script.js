@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const gates = ['H', 'X', 'Y', 'Z', 'C', 'P', 'T', 'I', 'm'];
+    const gates = ['H', 'X', 'Y', 'Z', 'C', 'P', 'T', 'I', 'm', 'Separator'];
     const gatePalette = document.getElementById('gatePalette');
     const circuit = document.getElementById('circuit');
     let qubitCount = 0;
@@ -24,54 +24,78 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to handle drop
     function drop(ev) {
         ev.preventDefault();
-        const gateType = ev.dataTransfer.getData("text/plain");
-    
-        // Create a new gate element
-        const gate = document.createElement('div');
-        gate.textContent = gateType;
-        gate.classList.add('gate');
-        gate.setAttribute('draggable', 'true');
-        gate.addEventListener('dragstart', dragStart);
-        gate.addEventListener('dragend', dragEnd);
-    
         let dropTarget = ev.target;
+        const gateType = ev.dataTransfer.getData("text/plain");
+        
     
-        // If the drop target is the qubit line or the wire, find the correct insert position
-        if (dropTarget.classList.contains('qubit-line') || dropTarget.classList.contains('qubit-wire')) {
-            // If the wire is the target, get its parent qubit line
-            if (dropTarget.classList.contains('qubit-wire')) {
-                dropTarget = dropTarget.parentNode;
-            }
+        
+        if (gateType === "Separator") {
+            // Calculate the drop position relative to the circuit container
+            const circuitRect = circuit.getBoundingClientRect();
+            const dropPositionX = ev.clientX - circuitRect.left;
+    
+            // Insert a visual representation of the separator across all rows
+            document.querySelectorAll('.qubit-line').forEach(qubitLine => {
+                const separator = document.createElement('div');
+                separator.classList.add('gate', 'separator');
+                separator.style.position = 'absolute';
+                separator.style.left = `${dropPositionX}px`;
+                // Additional styling to ensure visual consistency
+                separator.textContent = '|'; // Placeholder, adjust as needed
+                
+                qubitLine.appendChild(separator);
+            });
+        } else {
+            // Existing gate handling logic
+            // (Your existing gate creation and placement logic here)
+        
             
-            // Get the bounding rectangle of the qubit linegit push -u origin master
-            const qubitRect = dropTarget.getBoundingClientRect();
-            // Calculate the horizontal position where the gate was dropped
-            const dropPositionX = ev.clientX - qubitRect.left;
+
+            // Create a new gate element
+            const gate = document.createElement('div');
+            gate.textContent = gateType;
+            gate.classList.add('gate');
+            gate.setAttribute('draggable', 'true');
+            gate.addEventListener('dragstart', dragStart);
+            gate.addEventListener('dragend', dragEnd);
     
-            // Find the insert position based on existing gates in the qubit line
-            let insertAfterElement = null;
-            const children = Array.from(dropTarget.children);
-            for (let child of children) {
-                if (child.classList.contains('gate') || child.classList.contains('qubit-label')) {
-                    const childRect = child.getBoundingClientRect();
-                    const childCenterX = childRect.left + childRect.width / 2 - qubitRect.left;
-                    if (dropPositionX > childCenterX) {
-                        insertAfterElement = child;
-                    } else {
-                        break;
+            // If the drop target is the qubit line or the wire, find the correct insert position
+            if (dropTarget.classList.contains('qubit-line') || dropTarget.classList.contains('qubit-wire')) {
+                // If the wire is the target, get its parent qubit line
+                if (dropTarget.classList.contains('qubit-wire')) {
+                    dropTarget = dropTarget.parentNode;
+                }
+            
+                // Get the bounding rectangle of the qubit linegit push -u origin master
+                const qubitRect = dropTarget.getBoundingClientRect();
+                // Calculate the horizontal position where the gate was dropped
+                const dropPositionX = ev.clientX - qubitRect.left;
+    
+                // Find the insert position based on existing gates in the qubit line
+                let insertAfterElement = null;
+                const children = Array.from(dropTarget.children);
+                for (let child of children) {
+                    if (child.classList.contains('gate') || child.classList.contains('qubit-label')) {
+                        const childRect = child.getBoundingClientRect();
+                        const childCenterX = childRect.left + childRect.width / 2 - qubitRect.left;
+                        if (dropPositionX > childCenterX) {
+                            insertAfterElement = child;
+                        } else {
+                            break;
+                        }
                     }
                 }
-            }
     
-            // Insert the new gate after the determined element or at the start if null
-            if (insertAfterElement) {
-                insertAfterElement.parentNode.insertBefore(gate, insertAfterElement.nextSibling);
-            } else {
-                // This would be the case if no gates are present or it should be the first gate
-                dropTarget.insertBefore(gate, dropTarget.firstChild);
-            }
-            drawControlLines();
+                // Insert the new gate after the determined element or at the start if null
+                if (insertAfterElement) {
+                    insertAfterElement.parentNode.insertBefore(gate, insertAfterElement.nextSibling);
+                } else {
+                    // This would be the case if no gates are present or it should be the first gate
+                    dropTarget.insertBefore(gate, dropTarget.firstChild);
+                }
+                drawControlLines();
 
+            }
         }
     
         // Remove the dragging class from the original element in the palette
