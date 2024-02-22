@@ -121,6 +121,21 @@
     border-radius: 4px;
     align-self: center;
     align-content: center;
+    width: 150px;
+}
+
+.refresh {
+    margin-left: 20px;
+    padding: 5px 15px;
+    background-color: #063df1;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+    border: none;
+    border-radius: 4px;
+    align-self: center;
+    align-content: center;
+    width: 150px;
 }
 
 .control-line {
@@ -139,6 +154,16 @@
 
 .control-line.multiple-3 {
     background-color: #2ECC40;
+}
+
+#quicDisplay {
+    font-family: 'Courier New', Courier, monospace; /* Use a monospace font for better alignment */
+    font-size: 24px; /* Set the font size */
+    color: #333; /* Set the text color */
+    padding: 10px; 
+    margin: 10px 0; 
+    width: 100%; 
+    overflow-x: auto; 
 }
 
 

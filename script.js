@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const circuit = document.getElementById('circuit');
     let qubitCount = 0;
     let draggedGate = null;
+    let quic;
 
     // Function to allow dropping
     function allowDrop(ev) {
@@ -222,7 +223,7 @@ function generateQuic() {
     });
 
     // Join the gates with commas and create the QUIC string
-    const quic = depthGates.map(depth => depth.join('')).join(',');
+    quic = depthGates.map(depth => depth.join('')).join(',');
     
     // Output the QUIC (here we simply log it to the console, you can change this to display it on the page)
     console.log(quic);
@@ -236,6 +237,7 @@ function generateQuic() {
         document.body.appendChild(display);
     } else {
         quicDisplay.textContent = quic;
+        bubble_fn_quic(quic);
     }
 }
 function drawControlLines() {
@@ -252,7 +254,7 @@ function drawControlLines() {
         document.querySelectorAll(`.gate:nth-child(${depth + 1})`).forEach(gate => {
             if (gate.textContent === 'C') {
                 controlGateElement = gate;
-            } else if (['X', 'Y', 'Z'].includes(gate.textContent)) {
+            } else if (['X', 'Y', 'Z', 'N'].includes(gate.textContent)) {
                 targetGatesElements.push(gate);
             }
         });
@@ -293,11 +295,6 @@ function drawLine(fromElement, toElement) {
     
 }
 
-    
-
-
-
-
 
 document.getElementById('generateQuic').addEventListener('click', generateQuic);
 
@@ -322,6 +319,22 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
             draggedGate.parentNode.removeChild(draggedGate);
             draggedGate = null;
         }
+    });
+    document.getElementById('refresh').addEventListener('click', function () {
+        // Remove all qubit lines
+        const qubitLines = document.querySelectorAll('.qubit-line');
+        qubitLines.forEach((line) => {
+            line.parentNode.removeChild(line);
+        });
+    
+        // Reset qubit count
+        qubitCount = 0;
+    
+        // Add one default qubit line
+        addQubit();
+        drawControlLines();
+
+        document.getElementById('quicDisplay').innerHTML = '';
     });
     
 });
