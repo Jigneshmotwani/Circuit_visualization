@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const gates = ['H', 'X', 'Y', 'Z', 'C', 'P', 'T', 'I', 'm'];
+    const gates = ['H', 'X', 'Y', 'Z', 'C', 'N', 'P', 'T', 'I', 'm'];
     const gatePalette = document.getElementById('gatePalette');
     const circuit = document.getElementById('circuit');
     let qubitCount = 0;
+    let draggedGate = null;
 
     // Function to allow dropping
     function allowDrop(ev) {
@@ -14,28 +15,76 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set the data to the type of gate instead of the element ID
         ev.dataTransfer.setData("text/plain", ev.target.textContent);
         ev.target.classList.add('dragging');
+        draggedGate = ev.target;
+    
+        // Check if the dragged gate is from the palette or from the circuit
+        if (!ev.target.classList.contains('palette-gate')) {
+            // The gate is from the circuit, set a flag in the dataTransfer object
+            ev.dataTransfer.setData("fromCircuit", "true");
+        }
+    }
+
+    // Function to check if a point is inside the circuit
+    function isInsideCircuit(element) {
+        const circuitRect = document.getElementById('circuitContainer').getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+    
+        // Calculate the center of the element
+        const centerX = elementRect.left + elementRect.width / 2;
+        const centerY = elementRect.top + elementRect.height / 2;
+    
+        // Check if the center of the element is inside the circuit
+        return centerX >= circuitRect.left && centerX <= circuitRect.right && centerY >= circuitRect.top && centerY <= circuitRect.bottom;
     }
 
     // Function to handle drag end
     function dragEnd(ev) {
+        // Check if the dragged gate is from the palette or from the circuit
+        const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
+    
+        // If the gate is from the circuit and it's outside the circuit, remove it
+        if (fromCircuit) {
+            ev.target.remove();
+        }
+    
+        // Remove the dragging class from the original element in the palette
         ev.target.classList.remove('dragging');
     }
 
     // Function to handle drop
+    // Function to handle drop
     function drop(ev) {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
-    
+
+        // Check if the dragged gate is from the palette or from the circuit
+        const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
+
+        if (fromCircuit && !ev.target.classList.contains('qubit-line') && !ev.target.classList.contains('qubit-wire')) {
+            draggedGate.remove();
+        }
+
+        let gate;
+        if (fromCircuit) {
+            // The gate is from the circuit, use the existing gate
+            gate = draggedGate;
+            gate.addEventListener('dragend', dragEnd);
+        } else {
+            // The gate is from the palette, create a new gate
+            gate = document.createElement('div');
+            gate.textContent = gateType;
+            gate.classList.add('gate');
+            gate.classList.remove('palette-gate'); // Remove the 'palette-gate' class
+            gate.classList.add('circuit-gate'); // Add the 'circuit-gate' class
+            gate.setAttribute('draggable', 'true');
+            gate.addEventListener('dragstart', dragStart);
+            gate.addEventListener('dragend', dragEnd);
+        }
+
         // Create a new gate element
-        const gate = document.createElement('div');
-        gate.textContent = gateType;
-        gate.classList.add('gate');
-        gate.setAttribute('draggable', 'true');
-        gate.addEventListener('dragstart', dragStart);
-        gate.addEventListener('dragend', dragEnd);
-    
+
         let dropTarget = ev.target;
-    
+
         // If the drop target is the qubit line or the wire, find the correct insert position
         if (dropTarget.classList.contains('qubit-line') || dropTarget.classList.contains('qubit-wire')) {
             // If the wire is the target, get its parent qubit line
@@ -43,11 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropTarget = dropTarget.parentNode;
             }
             
-            // Get the bounding rectangle of the qubit linegit push -u origin master
+            // Get the bounding rectangle of the qubit line
             const qubitRect = dropTarget.getBoundingClientRect();
             // Calculate the horizontal position where the gate was dropped
             const dropPositionX = ev.clientX - qubitRect.left;
-    
+
             // Find the insert position based on existing gates in the qubit line
             let insertAfterElement = null;
             const children = Array.from(dropTarget.children);
@@ -62,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             }
-    
+
             // Insert the new gate after the determined element or at the start if null
             if (insertAfterElement) {
                 insertAfterElement.parentNode.insertBefore(gate, insertAfterElement.nextSibling);
@@ -71,11 +120,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropTarget.insertBefore(gate, dropTarget.firstChild);
             }
             drawControlLines();
-
+        } else {
+            if (fromCircuit) {
+                draggedGate.remove();
+            }
         }
-    
+
         // Remove the dragging class from the original element in the palette
-        document.querySelector('.dragging').classList.remove('dragging');
+        draggedGate.classList.remove('dragging');
+        
     }
     
     
@@ -153,7 +206,7 @@ function generateQuic() {
 
     // Find the maximum depth
     qubitLines.forEach(line => {
-        maxDepth = Math.max(maxDepth, line.children.length - 1); // -1 to exclude the qubit label
+        maxDepth = Math.max(maxDepth, line.children.length - 3); // -1 to exclude the qubit label
     });
 
     // Initialize depthGates with 'I'
@@ -259,4 +312,16 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
         addQubit();
         drawControlLines();
     });
+    document.getElementById('circuit').addEventListener('dragover', function(ev) {
+        ev.preventDefault();
+    });
+    document.addEventListener('drop', function(ev) {
+        ev.preventDefault();
+        // Check if the drop event occurred outside the "circuitContainer" element
+        if (draggedGate && ev.target.id !== 'circuit' && !ev.target.closest('#circuit')) {
+            draggedGate.parentNode.removeChild(draggedGate);
+            draggedGate = null;
+        }
+    });
+    
 });
