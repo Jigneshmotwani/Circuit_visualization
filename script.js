@@ -57,6 +57,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function drop(ev) {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
+        const itemType = ev.dataTransfer.getData("text/plain");
+
+        if (itemType === 'Separator') {
+            placeSeparator(ev.clientX);
+            return;
+        }
 
         // Check if the dragged gate is from the palette or from the circuit
         const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
@@ -131,6 +137,42 @@ document.addEventListener('DOMContentLoaded', function() {
         draggedGate.classList.remove('dragging');
         
     }
+    function placeSeparator(dropX) {
+        // Obtain the circuit container
+        const circuitContainer = document.getElementById('circuit');
+        // Calculate the circuit's offset from the left and top of the document
+        const circuitRect = circuitContainer.getBoundingClientRect();
+    
+        // Adjust the dropX to be relative to the circuit container
+        const relativeDropX = dropX - circuitRect.left;
+    
+        // Create the separator element
+        const separator = document.createElement('div');
+        separator.classList.add('circuit-separator');
+        
+        // Set the position of the separator based on the adjusted dropX value
+        separator.style.position = 'absolute';
+        separator.style.left = `${relativeDropX}px`;
+        // Adjust the top position if needed; for example, if you want it to be 10px from the top of the circuit
+        separator.style.top = '0px'; // Change this value if you want it positioned lower
+        separator.style.height = `${circuitContainer.offsetHeight}px`;
+        separator.style.width = '2px';
+        separator.style.backgroundColor = '#000';
+    
+        // Append the separator to the circuit container
+        circuitContainer.appendChild(separator);
+    }
+    
+    function updateSeparatorsHeight() {
+        // Get the new height of the circuit container
+        const newHeight = document.getElementById('circuit').offsetHeight;
+        
+        // Select all separators and update their height
+        const separators = document.querySelectorAll('.circuit-separator');
+        separators.forEach(separator => {
+            separator.style.height = `${newHeight}px`;
+        });
+    }
     
     
 
@@ -162,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
             removeButton.classList.add('remove-qubit');
             removeButton.onclick = removeQubit; // Attach the remove function
             qubitLine.appendChild(removeButton);
+            updateSeparatorsHeight();
         } else {
             alert('Maximum of 8 qubits reached.');
         }
@@ -175,6 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update qubit labels
         updateQubitLabels();
         drawControlLines();
+        updateSeparatorsHeight();
 
     }
 
@@ -242,16 +286,17 @@ function generateQuic() {
 }
 function drawControlLines() {
     // Clear any existing control lines
-    document.querySelectorAll('.control-line').forEach(line => line.remove());
+    // Modify this part in the drawControlLines function:
+    document.querySelectorAll('.gate.red-border').forEach(gate => gate.classList.remove('red-border'));
 
-    // Iterate over each depth (column) to draw lines
+    // Iterate over each depth (column) to find connections and draw lines
     const maxDepth = findMaxDepth();
-    for (let depth = 1; depth <= maxDepth; depth++) {
+    for (let depth = 0; depth <= maxDepth; depth++) {
         let controlGateElement = null;
         const targetGatesElements = [];
 
-        // Find control gate 'C' and target gates 'X', 'Y', 'Z' at this depth
-        document.querySelectorAll(`.gate:nth-child(${depth + 1})`).forEach(gate => {
+        // Find control gate 'C' and target gates 'X', 'Y', 'Z' at this depth in the circuit
+        circuit.querySelectorAll(`.qubit-line .gate:nth-child(${depth + 2})`).forEach(gate => {
             if (gate.textContent === 'C') {
                 controlGateElement = gate;
             } else if (['X', 'Y', 'Z', 'N'].includes(gate.textContent)) {
@@ -259,14 +304,22 @@ function drawControlLines() {
             }
         });
 
-        // Draw lines between control gate 'C' and target gates 'X', 'Y', 'Z'
-        if (controlGateElement) {
+        // Only draw lines and add red borders if there is a control and at least one target gate
+        if (controlGateElement && targetGatesElements.length > 0) {
+            controlGateElement.classList.add('red-border');
             targetGatesElements.forEach(targetGate => {
+                // Draw line between control and target gate
                 drawLine(controlGateElement, targetGate);
+                // Add red border to target gate
+                targetGate.classList.add('red-border');
             });
         }
     }
+
+// Your existing drawLine function appears correct; it should draw the line correctly now
+
 }
+
 
 function findMaxDepth() {
     return Array.from(document.querySelectorAll('.qubit-line'))
@@ -274,26 +327,36 @@ function findMaxDepth() {
 }
 
 function drawLine(fromElement, toElement) {
+    // Calculate the top and bottom positions of the gates
     const fromRect = fromElement.getBoundingClientRect();
     const toRect = toElement.getBoundingClientRect();
+
+    // Determine the starting and ending Y positions of the line
+    const startY = Math.min(fromRect.bottom, toRect.bottom);
+    const endY = Math.max(fromRect.top, toRect.top);
+
+    // Create the line element
     const line = document.createElement('div');
     line.classList.add('control-line');
-    line.style.opacity = '1';
-
     
-    
-    // Set the position of the line at the bottom of the 'C' gate
+    // Set the position and style of the line
     line.style.position = 'absolute';
-    line.style.left = `${fromRect.left + (fromRect.width / 2) - 1}px`; // -1 for the line width
-    line.style.top = `${fromRect.bottom}px`;
-    line.style.width = '2px'; // Line width
-    line.style.height = `${toRect.top - fromRect.bottom}px`; // Height from the bottom of 'C' to the top of 'X', 'Y', 'Z'
+    line.style.left = `${fromRect.left + (fromRect.width / 2) - 1}px`; // Center the line on the gate
+    line.style.top = `${startY}px`; // Start from the bottom of the 'C' gate
+    line.style.width = '2px';
+    line.style.height = `${endY - startY}px`; // The height should be the difference between the endY and startY
     line.style.backgroundColor = 'grey';
     
-    // Add the line to the body of the document
+    // Add the line to the body of the document or to a specific container if required
     document.body.appendChild(line);
-    
 }
+
+
+    
+document.getElementById('dragSeparator').addEventListener('dragstart', function(ev) {
+    ev.dataTransfer.setData("text/plain", 'Separator');
+    draggedGate = null; // Ensure gate dragging is not confused
+});
 
 
 document.getElementById('generateQuic').addEventListener('click', generateQuic);
@@ -327,6 +390,10 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
             line.parentNode.removeChild(line);
         });
     
+        const controlLines = document.querySelectorAll('.control-line');
+        controlLines.forEach((line) => {
+            line.remove(); // This removes the control lines from the DOM
+        });
         // Reset qubit count
         qubitCount = 0;
     

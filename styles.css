@@ -1,3 +1,7 @@
+.red-border {
+    border: 2px solid red !important; /* Adjust the border width as needed */
+}
+
 .gates {
     width: 20%;
     margin-right: 2%;
@@ -9,6 +13,22 @@
 
      /* Align the top of gates with the circuit */
 }
+
+#dragSeparator {
+    cursor: move; /* Indicates the element can be moved */
+    padding: 5px;
+    margin: 5px;
+    background-color: #ddd; /* Distinguish it visually */
+    border: 1px solid #666;
+    width: 20px; /* Adjust based on your UI */
+    text-align: center;
+}
+
+#circuit {
+    position: relative; /* This makes it a positioning context for absolutely positioned children */
+}
+
+
 
 .control-line-over-gate {
     opacity: 0.5;
