@@ -3,24 +3,24 @@
 }
 
 .gates {
-    width: 20%;
-    margin-right: 2%;
+    width: 15%;
     padding: 10px;
     border: 2px solid #d1d5db; /* Gray border */
     display: inline-block; /* Align with the circuit container */
     vertical-align: top;
     z-index: 1;
+    margin-right: 0px;
 
      /* Align the top of gates with the circuit */
 }
 
 #dragSeparator {
+    width: 5%;
     cursor: move; /* Indicates the element can be moved */
     padding: 5px;
-    margin: 5px;
+    margin: 10px;
     background-color: #ddd; /* Distinguish it visually */
     border: 1px solid #666;
-    width: 20px; /* Adjust based on your UI */
     text-align: center;
 }
 
