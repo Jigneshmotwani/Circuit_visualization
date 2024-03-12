@@ -394,8 +394,17 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
         controlLines.forEach((line) => {
             line.remove(); // This removes the control lines from the DOM
         });
+
+        const separatorLines = document.querySelectorAll('.circuit-separator');
+        separatorLines.forEach((line) => {
+            line.remove(); // This removes the separator lines from the DOM
+        });
+
+
         // Reset qubit count
         qubitCount = 0;
+
+        
     
         // Add one default qubit line
         addQubit();
