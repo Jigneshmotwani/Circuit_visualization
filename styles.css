@@ -189,6 +189,29 @@
     overflow-x: auto; 
 }
 
+.input-circuit {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.run-circuit {
+    margin-left: 10px;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.run-circuit:hover {
+    background-color: #45a049;
+}
+
+
 
 
 

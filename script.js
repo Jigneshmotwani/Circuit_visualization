@@ -284,6 +284,38 @@ function generateQuic() {
         bubble_fn_quic(quic);
     }
 }
+function runCircuitFromString(circuitString) {
+    // Clear existing circuit first
+    document.getElementById('refresh').click();
+
+    const steps = circuitString.split(',');
+    const qubitCount = steps[0].length; // Determine the number of qubits based on the first step
+
+    // Ensure there are enough qubits
+    while (qubitCount > document.querySelectorAll('.qubit-line').length) {
+        addQubit();
+    }
+
+    // Iterate over each step to place gates
+    steps.reverse().forEach((step, stepIndex) => {
+        step.split('').forEach((gate, qubitIndex) => {
+            
+            const qubitLine = document.querySelector(`.qubit-line[data-qubit="${qubitIndex}"]`);
+            placeGate(qubitLine, gate, stepIndex + 2); // +2 to account for qubit label and wire
+        
+        });
+    });
+
+    function placeGate(qubitLine, gateType) {
+        const gate = document.createElement('div');
+        gate.textContent = gateType;
+        gate.classList.add('gate', 'circuit-gate');
+        // Insert the new gate right after the qubit label, which is the first child
+        qubitLine.insertBefore(gate, qubitLine.children[1]); // Insert after the label
+    }
+    
+}
+
 function drawControlLines() {
     // Clear any existing control lines
     // Modify this part in the drawControlLines function:
@@ -383,6 +415,12 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
             draggedGate = null;
         }
     });
+
+    document.getElementById('runCircuit').addEventListener('click', function () {
+        const circuitString = document.getElementById('circuitInput').value;
+        runCircuitFromString(circuitString);
+    });
+    
     document.getElementById('refresh').addEventListener('click', function () {
         // Remove all qubit lines
         const qubitLines = document.querySelectorAll('.qubit-line');
