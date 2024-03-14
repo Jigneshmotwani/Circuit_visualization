@@ -87,14 +87,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let insertAfterElement = null;
             const children = Array.from(dropTarget.children);
-            let nearestSeparatorRight = findNearestSeparatorLeft(ev.clientX);
+            let nearestSeparatorLeft = findNearestSeparatorLeft(ev.clientX);
 
             for (let child of children) {
                 if (child.classList.contains('gate') || child.classList.contains('qubit-label')) {
                     const childRect = child.getBoundingClientRect();
                     const childCenterX = childRect.left + childRect.width / 2 - qubitRect.left;
                     if (dropPositionX > childCenterX) {
-                        if (nearestSeparatorRight && childCenterX > nearestSeparatorRight.position - qubitRect.left - 5) {
+                        if (nearestSeparatorLeft && childCenterX > nearestSeparatorLeft.position - qubitRect.left - 5) {
                             break;
                         }
                         insertAfterElement = child;
