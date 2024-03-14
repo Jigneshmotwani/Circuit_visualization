@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // The gate is from the circuit, set a flag in the dataTransfer object
             ev.dataTransfer.setData("fromCircuit", "true");
         }
+        
     }
 
 
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             gate.addEventListener('dragstart', dragStart);
             gate.addEventListener('dragend', dragEnd);
         }
+        clearControlLines();
 
         let dropTarget = ev.target;
         if (dropTarget.classList.contains('qubit-line') || dropTarget.classList.contains('qubit-wire')) {
@@ -110,6 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         draggedGate.classList.remove('dragging');
+    }
+
+    function clearControlLines() {
+        document.querySelectorAll('.control-line').forEach(line => line.remove());
     }
 
     function findNearestSeparatorRight(dropX) {
@@ -319,7 +325,7 @@ function runCircuitFromString(circuitString) {
         }
         return insertAfterLabel ? insertAfterLabel.nextSibling : qubitLine.firstChild.nextSibling;
     }
-    
+
     drawControlLines();
 
     
