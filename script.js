@@ -78,12 +78,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dropTarget.classList.contains('qubit-wire')) {
                 dropTarget = dropTarget.parentNode;
             }
+
+            
+                
+            
             const qubitRect = dropTarget.getBoundingClientRect();
             const dropPositionX = ev.clientX - qubitRect.left;
 
             let insertAfterElement = null;
             const children = Array.from(dropTarget.children);
-            let nearestSeparatorRight = findNearestSeparatorRight(ev.clientX);
+            let nearestSeparatorRight = findNearestSeparatorLeft(ev.clientX);
 
             for (let child of children) {
                 if (child.classList.contains('gate') || child.classList.contains('qubit-label')) {
@@ -106,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropTarget.insertBefore(gate, dropTarget.firstChild);
             }
             drawControlLines();
+        
         } else {
             if (fromCircuit) {
                 draggedGate.remove();
@@ -118,13 +123,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.control-line').forEach(line => line.remove());
     }
 
-    function findNearestSeparatorRight(dropX) {
+    function findNearestSeparatorLeft(dropX) {
         const separators = document.querySelectorAll('.circuit-separator');
         let nearest = null;
         separators.forEach(separator => {
             const separatorRect = separator.getBoundingClientRect();
-            if (separatorRect.left > dropX && (!nearest || nearest.left > separatorRect.left)) {
-                nearest = {separator: separator, position: separatorRect.left};
+            if (separatorRect.right < dropX && (!nearest || nearest.right > separatorRect.right)) {
+                nearest = {separator: separator, position: separatorRect.right};
             }
         });
         return nearest;
