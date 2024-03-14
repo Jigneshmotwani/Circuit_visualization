@@ -42,8 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to handle drop
-    // Function to handle drop
-    // Function to handle drop
     function drop(ev) {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
@@ -119,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let nearest = null;
         separators.forEach(separator => {
             const separatorRect = separator.getBoundingClientRect();
-            if (separatorRect.left < dropX && (!nearest || nearest.left < separatorRect.left)) {
+            if (separatorRect.left > dropX && (!nearest || nearest.left > separatorRect.left)) {
                 nearest = {separator: separator, position: separatorRect.left};
             }
         });
@@ -299,9 +297,31 @@ function runCircuitFromString(circuitString) {
         const gate = document.createElement('div');
         gate.textContent = gateType;
         gate.classList.add('gate', 'circuit-gate');
+        gate.setAttribute('draggable', 'true');
+        gate.addEventListener('dragstart', dragStart);
+        gate.addEventListener('dragend', dragEnd);
         // Insert the new gate right after the qubit label, which is the first child
-        qubitLine.insertBefore(gate, qubitLine.children[1]); // Insert after the label
+        const insertPosition = findInsertPosition(qubitLine);
+        qubitLine.insertBefore(gate, insertPosition);
     }
+
+    function findInsertPosition(qubitLine) {
+        // Find the position where the new gate should be inserted. This logic ensures that gates
+        // added through the Run button are placed at the correct position within the qubit line.
+        const children = Array.from(qubitLine.children);
+        let insertAfterLabel = qubitLine.firstChild; // Start with the label
+        for (let child of children) {
+            if (child.classList.contains('gate')) {
+                insertAfterLabel = child;
+            } else {
+                break; // Stop once the first gate is found
+            }
+        }
+        return insertAfterLabel ? insertAfterLabel.nextSibling : qubitLine.firstChild.nextSibling;
+    }
+    
+    drawControlLines();
+
     
 }
 
@@ -408,6 +428,7 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
     document.getElementById('runCircuit').addEventListener('click', function () {
         const circuitString = document.getElementById('circuitInput').value;
         runCircuitFromString(circuitString);
+
     });
     
     document.getElementById('refresh').addEventListener('click', function () {
