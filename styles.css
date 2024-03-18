@@ -14,18 +14,9 @@
      /* Align the top of gates with the circuit */
 }
 
-#dragSeparator {
-    cursor: move; /* Indicates the element can be moved */
-    padding: 5px;
-    margin: 10px;
-    background-color: #ddd; /* Distinguish it visually */
-    border: 1px solid #666;
-    text-align: center;
-}
 
-#separatorPalette {
-    width: 3%;
-}
+
+
 
 #circuit {
     position: relative; /* This makes it a positioning context for absolutely positioned children */

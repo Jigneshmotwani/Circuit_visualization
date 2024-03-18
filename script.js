@@ -43,135 +43,94 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to handle drop
+    // Function to handle drop
     function drop(ev) {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
-
-        // Check if the dragged item is a Separator
-        if (gateType === 'Separator') {
-            placeSeparator(ev.clientX);
-            return;
-        }
-
+    
+        
+    
         const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
-
-        if (fromCircuit && !ev.target.classList.contains('qubit-line') && !ev.target.classList.contains('qubit-wire')) {
-            draggedGate.remove();
-        }
-
+        clearControlLines();
+    
         let gate;
-        if (fromCircuit) {
-            gate = draggedGate;
-            gate.addEventListener('dragend', dragEnd);
-        } else {
+        if (!fromCircuit) {
+            // Create a new gate if it's dragged from the palette
             gate = document.createElement('div');
             gate.textContent = gateType;
             gate.classList.add('gate', 'circuit-gate');
             gate.setAttribute('draggable', 'true');
             gate.addEventListener('dragstart', dragStart);
             gate.addEventListener('dragend', dragEnd);
+        } else if (draggedGate) {
+            // If the gate is dragged from the circuit, use it directly
+            gate = draggedGate;
         }
-        clearControlLines();
-
+    
         let dropTarget = ev.target;
-        if (dropTarget.classList.contains('qubit-line') || dropTarget.classList.contains('qubit-wire')) {
-            if (dropTarget.classList.contains('qubit-wire')) {
-                dropTarget = dropTarget.parentNode;
-            }
+        if (dropTarget.classList.contains('gate')) {
+            // Dropping on another gate - replace it with the new/dragged gate
+            const parentLine = dropTarget.parentNode;
+            parentLine.replaceChild(gate, dropTarget);
+        } else {
+            // Normal placement or repositioning logic
+            placeGate(dropTarget, gate, ev.clientX);
+        }
+    
+        drawControlLines();
+        // Reset dragged gate reference after drop
+        draggedGate = null;
+    }
 
-            
-                
-            
+    function placeGate(dropTarget, gate, dropX) {
+        dropTarget = dropTarget.closest('.qubit-line') || dropTarget;
+        if (dropTarget.classList.contains('qubit-line')) {
             const qubitRect = dropTarget.getBoundingClientRect();
-            const dropPositionX = ev.clientX - qubitRect.left;
-
+            const dropPositionX = dropX - qubitRect.left;
+    
             let insertAfterElement = null;
             const children = Array.from(dropTarget.children);
-            let nearestSeparatorLeft = findNearestSeparatorLeft(ev.clientX);
-
+    
+            // Adjust drop position if there is a separator
+            const adjustedDropPositionX = dropPositionX;
+    
             for (let child of children) {
-                if (child.classList.contains('gate') || child.classList.contains('qubit-label')) {
+                if (child.classList.contains('gate')) {
                     const childRect = child.getBoundingClientRect();
                     const childCenterX = childRect.left + childRect.width / 2 - qubitRect.left;
-                    if (dropPositionX > childCenterX) {
-                        if (nearestSeparatorLeft && childCenterX > nearestSeparatorLeft.position - qubitRect.left - 5) {
-                            break;
-                        }
+                    if (adjustedDropPositionX > childCenterX) {
                         insertAfterElement = child;
                     } else {
+                        // If dropping onto an existing gate, replace it
+                        if (dropPositionX >= childRect.left - qubitRect.left && dropPositionX <= childRect.right - qubitRect.left) {
+                            dropTarget.replaceChild(gate, child);
+                            return; // Exit the function after replacing the gate
+                        }
                         break;
                     }
                 }
             }
-
+    
+            // Place the gate at the adjusted position if there's no gate to replace
             if (insertAfterElement) {
                 insertAfterElement.parentNode.insertBefore(gate, insertAfterElement.nextSibling);
             } else {
-                dropTarget.insertBefore(gate, dropTarget.firstChild);
-            }
-            drawControlLines();
-        
-        } else {
-            if (fromCircuit) {
-                draggedGate.remove();
+                // Append at the beginning if no gates are present or the position is at the start
+                const qubitLabel = dropTarget.querySelector('.qubit-label');
+                if (qubitLabel) {
+                    // If there's a label, insert after the label
+                    dropTarget.insertBefore(gate, qubitLabel.nextSibling);
+                } else {
+                    // If no label, append as the first child
+                    dropTarget.insertBefore(gate, dropTarget.firstChild);
+                }
             }
         }
-        draggedGate.classList.remove('dragging');
     }
 
     function clearControlLines() {
         document.querySelectorAll('.control-line').forEach(line => line.remove());
-    }
-
-    function findNearestSeparatorLeft(dropX) {
-        const separators = document.querySelectorAll('.circuit-separator');
-        let nearest = null;
-        separators.forEach(separator => {
-            const separatorRect = separator.getBoundingClientRect();
-            if (separatorRect.right < dropX && (!nearest || nearest.right > separatorRect.right)) {
-                nearest = {separator: separator, position: separatorRect.right};
-            }
-        });
-        return nearest;
-    }
-
-    function placeSeparator(dropX) {
-        // Obtain the circuit container
-        const circuitContainer = document.getElementById('circuit');
-        // Calculate the circuit's offset from the left and top of the document
-        const circuitRect = circuitContainer.getBoundingClientRect();
-    
-        // Adjust the dropX to be relative to the circuit container
-        const relativeDropX = dropX - circuitRect.left;
-    
-        // Create the separator element
-        const separator = document.createElement('div');
-        separator.classList.add('circuit-separator');
-        
-        // Set the position of the separator based on the adjusted dropX value
-        separator.style.position = 'absolute';
-        separator.style.left = `${relativeDropX}px`;
-        // Adjust the top position if needed; for example, if you want it to be 10px from the top of the circuit
-        separator.style.top = '0px'; // Change this value if you want it positioned lower
-        separator.style.height = `${circuitContainer.offsetHeight}px`;
-        separator.style.width = '2px';
-        separator.style.backgroundColor = '#000';
-    
-        // Append the separator to the circuit container
-        circuitContainer.appendChild(separator);
-    }
-    
-    function updateSeparatorsHeight() {
-        // Get the new height of the circuit container
-        const newHeight = document.getElementById('circuit').offsetHeight;
-        
-        // Select all separators and update their height
-        const separators = document.querySelectorAll('.circuit-separator');
-        separators.forEach(separator => {
-            separator.style.height = `${newHeight}px`;
-        });
-    }
-    
+    }    
     
 
     // Function to add a qubit line to the circuit
@@ -202,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
             removeButton.classList.add('remove-qubit');
             removeButton.onclick = removeQubit; // Attach the remove function
             qubitLine.appendChild(removeButton);
-            updateSeparatorsHeight();
         } else {
             alert('Maximum of 8 qubits reached.');
         }
@@ -216,8 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update qubit labels
         updateQubitLabels();
         drawControlLines();
-        updateSeparatorsHeight();
-
     }
 
     function updateQubitLabels() {
@@ -405,10 +361,7 @@ function drawLine(fromElement, toElement) {
 
 
     
-document.getElementById('dragSeparator').addEventListener('dragstart', function(ev) {
-    ev.dataTransfer.setData("text/plain", 'Separator');
-    draggedGate = null; // Ensure gate dragging is not confused
-});
+
 
 
 document.getElementById('generateQuic').addEventListener('click', generateQuic);
