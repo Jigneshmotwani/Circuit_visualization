@@ -289,6 +289,7 @@ function runCircuitFromString(circuitString) {
             
             const qubitLine = document.querySelector(`.qubit-line[data-qubit="${qubitIndex}"]`);
             placeGate(qubitLine, gate, stepIndex + 2); // +2 to account for qubit label and wire
+            adjustGatesInQubitLine(qubitLine);
         
         });
     });
