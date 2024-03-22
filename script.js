@@ -23,36 +23,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // The gate is from the circuit, set a flag in the dataTransfer object
             ev.dataTransfer.setData("fromCircuit", "true");
         }
-        
     }
-
 
 
     // Function to handle drag end
     function dragEnd(ev) {
         // Check if the dragged gate is from the palette or from the circuit
         const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
-    
         // If the gate is from the circuit and it's outside the circuit, remove it
         if (fromCircuit) {
             ev.target.remove();
         }
-    
         // Remove the dragging class from the original element in the palette
         ev.target.classList.remove('dragging');
     }
 
     // Function to handle drop
-    // Function to handle drop
     function drop(ev) {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
-    
-        
-    
         const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
         clearControlLines();
-    
         let gate;
         if (!fromCircuit) {
             // Create a new gate if it's dragged from the palette
@@ -147,6 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
             label.classList.add('qubit-label');
             label.textContent = `q[${qubitCount}]: `;
             qubitLine.appendChild(label);
+
+            const maxGates = 16; // This should be the maximum number of gates you want on the qubit line
+            for (let i = 0; i < maxGates; i++) {
+                qubitLine.appendChild(createInvisibleGate()); // This will insert invisible gates right after the label
+            }
             
             // Create and append the wire element
             const wire = document.createElement('div');
@@ -164,6 +160,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             alert('Maximum of 8 qubits reached.');
         }
+    }
+
+    function createInvisibleGate() {
+        const invisibleGate = document.createElement('div');
+        invisibleGate.classList.add('gate', 'invisible-gate');
+        invisibleGate.setAttribute('draggable', 'true');
+        invisibleGate.addEventListener('dragstart', dragStart);
+        invisibleGate.addEventListener('dragend', dragEnd);
+        return invisibleGate;
     }
 
     function removeQubit(ev) {
