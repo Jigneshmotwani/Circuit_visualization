@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let qubitCount = 0;
     let draggedGate = null;
     let quic;
+    const maxGates = 13;
 
     // Function to allow dropping
     function allowDrop(ev) {
@@ -43,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ev.preventDefault();
         const gateType = ev.dataTransfer.getData("text/plain");
         const fromCircuit = ev.dataTransfer.getData("fromCircuit") === "true";
+        let originalQubitLine = draggedGate ? draggedGate.closest('.qubit-line') : null; // Get original qubit line if gate is moved within the circuit
+
         clearControlLines();
         let gate;
         if (!fromCircuit) {
@@ -59,18 +62,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     
         let dropTarget = ev.target;
+        let targetQubitLine;
         if (dropTarget.classList.contains('gate')) {
             // Dropping on another gate - replace it with the new/dragged gate
             const parentLine = dropTarget.parentNode;
             parentLine.replaceChild(gate, dropTarget);
+            targetQubitLine = parentLine.closest('.qubit-line');
         } else {
             // Normal placement or repositioning logic
             placeGate(dropTarget, gate, ev.clientX);
+            const targetQubitLine = dropTarget.closest('.qubit-line') || dropTarget;
+            adjustGatesInQubitLine(targetQubitLine);
         }
+
+        if (originalQubitLine) adjustGatesInQubitLine(originalQubitLine); // Adjust gates in the original line if a gate was moved
+        adjustGatesInQubitLine(targetQubitLine);
     
         drawControlLines();
         // Reset dragged gate reference after drop
         draggedGate = null;
+    }
+
+    function adjustGatesInQubitLine(qubitLine) {
+        const currentGates = qubitLine.querySelectorAll('.gate').length; // includes invisible gates
+        const gatesNeeded = maxGates - currentGates;
+    
+        if (gatesNeeded > 0) {
+            for (let i = 0; i < gatesNeeded; i++) {
+                const removeButton = qubitLine.querySelector('.remove-qubit');
+                qubitLine.insertBefore(createInvisibleGate(), removeButton); // add invisible gates if needed
+            }
+        } else if (gatesNeeded < 0) {
+            // remove extra gates starting from the right
+            Array.from(qubitLine.querySelectorAll('.gate'))
+                .slice(gatesNeeded) // gets the last few gates equal to the excess amount
+                .forEach(gate => gate.remove());
+        }
     }
 
     function placeGate(dropTarget, gate, dropX) {
@@ -139,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function() {
             label.textContent = `q[${qubitCount}]: `;
             qubitLine.appendChild(label);
 
-            const maxGates = 16; // This should be the maximum number of gates you want on the qubit line
             for (let i = 0; i < maxGates; i++) {
                 qubitLine.appendChild(createInvisibleGate()); // This will insert invisible gates right after the label
             }
@@ -160,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             alert('Maximum of 8 qubits reached.');
         }
+        drawControlLines();
     }
 
     function createInvisibleGate() {
@@ -172,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function removeQubit(ev) {
+        clearControlLines();
         const qubitLine = ev.target.parentNode;
         qubitLine.parentNode.removeChild(qubitLine);
         // Update the qubit count
@@ -428,6 +456,19 @@ document.getElementById('generateQuic').addEventListener('click', generateQuic);
         drawControlLines();
 
         document.getElementById('quicDisplay').innerHTML = '';
+    });
+
+    const hideGridsCheckbox = document.getElementById('hideGrids');
+
+    hideGridsCheckbox.addEventListener('change', function() {
+        const invisibleGates = document.querySelectorAll('.invisible-gate');
+        invisibleGates.forEach(gate => {
+            if (this.checked) {
+                gate.style.border = 'none';
+            } else {
+                gate.style.border = '1px dashed #d1d5db';
+            }
+        });
     });
     
 });

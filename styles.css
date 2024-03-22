@@ -86,8 +86,14 @@
     z-index: 2;
 }
 
+#grid_hide{
+    margin-top: 4px;
+    margin-right: 100px;
+}
+
+
 .invisible-gate {
-    border: none;
+    border: 1px dashed #d1d5db;
     background-color: transparent; /* No background */
     height: 100%; /* Take full height of qubit line for easier dragging */
     margin: 0 5px;
